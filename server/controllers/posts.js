@@ -1,10 +1,19 @@
 import Post from '../models/Post.js'
 import User from '../models/User.js'
+import { moderatePost } from "../services/contentModeration.js";
 
 /* CREATE */
 export const createPost = async (req, res) => {
   try {
     const { userId, description, picturePath } = req.body
+  const moderationResult = await moderatePost(description);
+
+if (moderationResult.blocked) {
+  return res.status(400).json({
+    message: moderationResult.message,
+    reason: moderationResult.reason,
+  });
+}
     const user = await User.findById(userId)
     const newPost = new Post({
       userId,
